@@ -1,4 +1,5 @@
-import os, time
+import os
+import time
 from logger import logger, spinner
 
 def folder_exists(path):

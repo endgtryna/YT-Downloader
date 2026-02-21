@@ -15,10 +15,9 @@ def prompt_source(mode):
     if mode == 'single':
         while True:
             user_input = input('Youtube link: ').strip()
-            metadata = get_metadata(1, user_input)
+            metadata = get_metadata(None, user_input)
             if not metadata:
                 continue
-            logger('success', f'✓ {metadata['title']}')
             return user_input
     else:
         while True:

@@ -1,4 +1,5 @@
-import yt_dlp, re
+import yt_dlp
+import re
 import imageio_ffmpeg as ffmpeg
 from logger import logger, spinner
 
@@ -12,12 +13,12 @@ ffmpeg_path = ffmpeg.get_ffmpeg_exe()
 def validate_youtube_link(index, link):
     youtube_regex = (
         r'(https?://)?(www\.|m\.)?'
-        '(youtube\.com|youtu\.be|youtube-nocookie\.com)/'
-        '(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})'
+        r'(youtube\.com|youtu\.be|youtube-nocookie\.com)/'
+        r'(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})'
     )
     match = re.match(youtube_regex, link)
     if not match:
-        logger('error', f'✗ {index}. {link} (Invalid Youtube link)')
+        logger('error', f"✗{'' if index is None else f' {index}.'} {link} (Invalid Youtube link)")
     return match is not None
 
 def get_metadata(index, link):
@@ -38,22 +39,24 @@ def get_metadata(index, link):
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             metadata = ydl.extract_info(link, download=False)
-            logger('success', f"✓ {index}. {metadata['title']}")
-            return {
-                'title': metadata.get('title', 'Unkown'),
-                'thumbnail': metadata.get('thumbnail'),
-                'duration': metadata.get('duration')
-            }
+            if metadata:
+                logger('success', f"✓{'' if index is None else f' {index}.'} {metadata['title']}")
+                return {
+                    'title': metadata.get('title', 'Unkown'),
+                    'thumbnail': metadata.get('thumbnail'),
+                    'duration': metadata.get('duration')
+                }
+            return None
     
     except Exception:
-        logger('error', f'✗ {index}. {link} (Failed get metadata)')
-        return False
+        logger('error', f"✗{'' if index is None else f' {index}.'} {link} (Failed get metadata)")
+        return None
     
     finally:
         get_metadata_spinner.stop()
 
 def downloader(index, link, type, save_path):
-    downloading_spinner = spinner('info', f"Downloading {type} {index} ...")
+    downloading_spinner = spinner('info', f"Downloading {type}{'...' if index is None else f' {index} ...'}")
 
     try:
         ydl_opts_video = {
@@ -95,11 +98,11 @@ def downloader(index, link, type, save_path):
         with yt_dlp.YoutubeDL(ydl_opts_video if type == 'video' else ydl_opts_audio) as ydl:
             ydl.download([link])
 
-        logger('success', f"✓ {type.capitalize()} {index} downloaded successfully")
+        logger('success', f"✓ {type.capitalize()}{'' if index is None else f' {index}'} downloaded successfully")
         return True
 
     except Exception:
-        logger('error', f"✗ Failed to download {type} {index}")
+        logger('error', f"✗ Failed to download {type}{'' if index is None else f' {index}'}")
         return False
     
     finally:

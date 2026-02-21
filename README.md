@@ -13,28 +13,35 @@ cd YT-Downloader
 
 ### 2. Setup & Install
 
+#### Windows:
 ```bash
-chmod +x setup.sh
+python setup.py
+```
+
+#### Linux/Mac:
+```bash
 ./setup.sh
+```
+
+Or use Python setup (works on all platforms):
+```bash
+python3 setup.py
 ```
 
 The setup script will:
 - Create virtual environment
 - Install dependencies
 - Setup Node.js environment
-- Add executable to PATH
+- Create launcher
 
-### 3. Reload Terminal
+### 3. Post-Installation
 
+**Linux/Mac:** Reload terminal
 ```bash
-# For Bash
-source ~/.bashrc
-
-# For Zsh  
-source ~/.zshrc
-
-# Or restart terminal
+source ~/.bashrc  # or ~/.zshrc
 ```
+
+**Windows:** Restart terminal to use `yt-downloader` command
 
 ## Usage
 
