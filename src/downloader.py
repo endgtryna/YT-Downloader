@@ -83,9 +83,9 @@ def downloader(index, link, type, save_path, resolution='720'):
                     progress.update(task, description=f'Downloading audio (merging)...', total=None, completed=0)
 
         fmt_video = (
-            f'bestvideo[height<={resolution}]+bestaudio/best[height<={resolution}]/best'
+            f'bestvideo[vcodec^=avc][height<={resolution}]+bestaudio[acodec^=mp4a]/bestvideo[vcodec^=avc][height<={resolution}]+bestaudio/bestvideo[height<={resolution}]+bestaudio[acodec^=mp4a]/bestvideo[height<={resolution}]+bestaudio'
             if resolution != 'best'
-            else 'bestvideo+bestaudio/best'
+            else 'bestvideo[vcodec^=avc]+bestaudio[acodec^=mp4a]/bestvideo[vcodec^=avc]+bestaudio/bestvideo+bestaudio[acodec^=mp4a]/bestvideo+bestaudio'
         )
 
         ydl_opts_video = {
@@ -97,7 +97,10 @@ def downloader(index, link, type, save_path, resolution='720'):
             'merge_output_format': 'mp4',
             'outtmpl': f'{save_path}/%(title)s.%(ext)s',
             'progress_hooks': [progress_hook],
-            'postprocessors': [{'key': 'FFmpegVideoConvertor', 'preferedformat': 'mp4'}]
+            'postprocessors': [
+                {'key': 'FFmpegVideoConvertor', 'preferedformat': 'mp4'},
+                {'key': 'FFmpegVideoRemuxer', 'preferedformat': 'mp4'}
+            ]
         }
 
         ydl_opts_audio = {
