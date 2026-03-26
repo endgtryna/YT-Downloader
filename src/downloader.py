@@ -1,3 +1,4 @@
+import os
 import yt_dlp
 import re
 import imageio_ffmpeg as ffmpeg
@@ -10,6 +11,7 @@ class custom_logger():
     def error(self, msg): pass
 
 ffmpeg_path = ffmpeg.get_ffmpeg_exe()
+node_path = os.path.join(os.path.dirname(ffmpeg_path), 'node')
 
 def validate_youtube_link(index, link):
     youtube_regex = (
@@ -35,7 +37,7 @@ def get_metadata(index, link):
             'no_warnings': True,
             'logger': custom_logger(),
             'simulate': True,
-            'js_runtimes': {'node': {}}
+            'js_runtimes': {'node': {'path': node_path}}
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -45,7 +47,9 @@ def get_metadata(index, link):
                 return {
                     'title': metadata.get('title', 'Unkown'),
                     'thumbnail': metadata.get('thumbnail'),
-                    'duration': metadata.get('duration')
+                    'duration': metadata.get('duration'),
+                    'width': metadata.get('width'),
+                    'height': metadata.get('height')
                 }
             return None
     
@@ -59,6 +63,10 @@ def get_metadata(index, link):
 def downloader(index, link, type, save_path, resolution='720'):
     label = f"{type}{'' if index is None else f' {index}'}"
     download_count = [0]
+
+    meta = get_metadata(index, link) if resolution and resolution != 'best' else None
+    is_portrait = meta and meta.get('width') and meta.get('height') and meta['width'] < meta['height']
+    dim_filter = 'width' if is_portrait else 'height'
 
     with Progress(
         '[info]{task.description}',
@@ -83,7 +91,7 @@ def downloader(index, link, type, save_path, resolution='720'):
                     progress.update(task, description=f'Downloading audio (merging)...', total=None, completed=0)
 
         fmt_video = (
-            f'bestvideo[vcodec^=avc][height<={resolution}]+bestaudio[acodec^=mp4a]/bestvideo[vcodec^=avc][height<={resolution}]+bestaudio/bestvideo[height<={resolution}]+bestaudio[acodec^=mp4a]/bestvideo[height<={resolution}]+bestaudio'
+            f'bestvideo[vcodec^=avc][{dim_filter}<={resolution}]+bestaudio[acodec^=mp4a]/bestvideo[vcodec^=avc][{dim_filter}<={resolution}]+bestaudio/bestvideo[{dim_filter}<={resolution}]+bestaudio[acodec^=mp4a]/bestvideo[{dim_filter}<={resolution}]+bestaudio'
             if resolution != 'best'
             else 'bestvideo[vcodec^=avc]+bestaudio[acodec^=mp4a]/bestvideo[vcodec^=avc]+bestaudio/bestvideo+bestaudio[acodec^=mp4a]/bestvideo+bestaudio'
         )

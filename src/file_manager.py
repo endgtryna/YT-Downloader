@@ -1,10 +1,8 @@
 import os
-import time
 from logger import logger, spinner
 
 def folder_exists(path):
     check_folder_exists_spinner = spinner('info', 'Check folder exists...')
-    time.sleep(3)
     is_folder_exists = os.path.isdir(os.path.expanduser(path))
     check_folder_exists_spinner.stop()
     if not is_folder_exists:
@@ -14,7 +12,6 @@ def folder_exists(path):
 
 def file_exists(path):
     check_file_exists_spinner = spinner('info', 'Check file exists...')
-    time.sleep(3)
     is_file_exists = os.path.isfile(os.path.expanduser(path))
     check_file_exists_spinner.stop()
     if not is_file_exists:
